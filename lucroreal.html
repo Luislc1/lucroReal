@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Lucro Real | Consórcios e Investimentos</title>
+    <meta name="description"
+        content="Simule seu consórcio na Lucro Real. Crédito para imóveis, veículos, investimentos e equipamentos agrícolas." />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+    <!-- AOS Animation -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+
+    <!-- ================================================
+         GOOGLE ANALYTICS — substitua G-XXXXXXXXXX pelo
+         seu ID real em analytics.google.com
+    ================================================= -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <style>
+        /* ===== RESET E VARIÁVEIS ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary-dark: #1a1a1a;
+            --primary: #2c2c2c;
+            --accent:       #2AAFD4;
+            --accent-light: #4DC3E8;
+            --accent-dark:  #1A8BAF;
+            --diamond-gradient: linear-gradient(135deg, #4DC3E8 0%, #2AAFD4 50%, #1A8BAF 100%);
+            --diamond-gradient-h: linear-gradient(90deg, #4DC3E8 0%, #2AAFD4 50%, #1A8BAF 100%);
+            --bg-light: #fefef7;
+            --gray-text: #4a4a4a;
+            --muted: #6c6c6c;
+            --border-light: rgba(0,0,0,0.08);
+            --shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+            --radius: 28px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--primary-dark);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image:
+                repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 2px, transparent 2px, transparent 10px),
+                repeating-linear-gradient(135deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 2px, transparent 2px, transparent 10px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding-inline: 20px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Loader */
+        .loader {
+            position: fixed; inset: 0;
+            background: var(--bg-light);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 99999; transition: 0.5s;
+        }
+        .loader.hidden { opacity: 0; visibility: hidden; }
+        .loader-circle {
+            width: 70px; height: 70px; border-radius: 50%;
+            border: 4px solid rgba(0,0,0,0.1);
+            border-top: 4px solid var(--accent);
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Barra de progresso */
+        .scroll-progress {
+            position: fixed; top: 0; left: 0; height: 4px;
+            background: var(--diamond-gradient-h);
+            width: 0%; z-index: 999999;
+        }
+
+        /* Header */
+        .header {
+            position: sticky; top: 0; z-index: 999;
+            backdrop-filter: blur(12px);
+            background: rgba(255,255,255,0.85);
+            border-bottom: 1px solid var(--border-light);
+        }
+        .header-container {
+            height: 82px; display: flex;
+            align-items: center; justify-content: space-between;
+        }
+        .logo { display: flex; align-items: center; gap: 14px; position: relative; }
+        .logo-glow {
+            position: absolute; width: 100px; height: 100px;
+            background: radial-gradient(var(--accent-light), transparent);
+            filter: blur(40px); opacity: 0.3; z-index: -1;
+        }
+        .logo-img { width: clamp(140px, 22vw, 300px); height: auto; display: block; }
+        .nav-list { display: flex; gap: 32px; list-style: none; }
+        .nav-list a { text-decoration: none; color: var(--primary-dark); font-weight: 500; transition: color 0.2s; }
+        .nav-list a:hover { color: var(--accent); }
+        .mobile-menu-btn { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--primary-dark); }
+
+        /* Botões */
+        .btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 14px 28px; border-radius: 60px;
+            font-weight: 700; font-size: 0.95rem;
+            border: none; cursor: pointer; transition: all 0.2s;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: var(--diamond-gradient); color: white;
+            box-shadow: 0 6px 14px rgba(42,175,212,0.35);
+        }
+        .btn-primary:hover { filter: brightness(0.9); transform: translateY(-3px); box-shadow: 0 10px 24px rgba(42,175,212,0.45); }
+        .btn-outline { background: transparent; border: 1.5px solid var(--primary-dark); color: var(--primary-dark); }
+        .btn-outline:hover { background: var(--primary-dark); color: white; transform: translateY(-3px); }
+        .btn-whatsapp { background: #25D366; color: white; box-shadow: 0 6px 14px rgba(37,211,102,0.3); }
+        .btn-whatsapp:hover { background: #20b859; transform: scale(1.02); }
+        .btn-large { padding: 16px 38px; font-size: 1rem; }
+        .btn-block { width: 100%; justify-content: center; }
+
+        /* Hero */
+        .hero { position: relative; padding: 100px 0 60px; background: var(--bg-light); }
+        .hero-blur { position: absolute; border-radius: 50%; filter: blur(80px); z-index: 0; opacity: 0.35; }
+        .hero-blur-1 { width: 350px; height: 350px; background: var(--accent-light); top: -80px; left: -80px; }
+        .hero-blur-2 { width: 400px; height: 400px; background: rgba(42,175,212,0.15); bottom: -150px; right: -150px; }
+        .hero-container { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+        .hero-badge {
+            display: inline-block; background: rgba(42,175,212,0.12);
+            color: var(--accent-dark); padding: 6px 18px;
+            border-radius: 60px; font-size: 0.8rem; font-weight: 600; margin-bottom: 24px;
+        }
+        .hero-content h2 { font-size: clamp(2rem, 5vw, 4rem); line-height: 1.1; margin-bottom: 20px; }
+        .hero-content p { color: var(--gray-text); font-size: 1.05rem; margin-bottom: 36px; max-width: 90%; }
+        .hero-buttons { display: flex; gap: 18px; flex-wrap: wrap; }
+        .hero-visual { perspective: 800px; }
+        .hero-image-wrapper {
+            position: relative; width: 100%; max-width: 520px;
+            aspect-ratio: 4/5; margin: 0 auto; border-radius: 32px;
+            overflow: hidden; box-shadow: var(--shadow);
+            transform: rotateY(-4deg) rotateX(3deg); transition: 0.4s;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .hero-dashboard-img { width: 100%; height: 100%; object-fit: cover; }
+        .hero-image-wrapper:hover { transform: rotateY(-2deg) rotateX(1deg) scale(1.02); }
+        .hero-image-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+            display: flex; align-items: flex-end; padding: 28px;
+        }
+        .overlay-card { background: rgba(255,255,255,0.95); border-radius: 24px; padding: 12px 24px; box-shadow: var(--shadow); }
+        .overlay-card span { font-size: 0.75rem; color: var(--muted); }
+        .overlay-card strong { font-size: 1.4rem; color: var(--primary-dark); }
+
+        /* Objetivos */
+        .objectives { padding: 80px 0 40px; }
+        .section-header { text-align: center; margin-bottom: 60px; }
+        .section-tag {
+            display: inline-block; background: rgba(42,175,212,0.12);
+            color: var(--accent-dark); padding: 5px 16px;
+            border-radius: 60px; font-size: 0.75rem; font-weight: 600; margin-bottom: 20px;
+        }
+        .section-header h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); margin-bottom: 16px; }
+        .section-header p { color: var(--gray-text); max-width: 700px; margin: 0 auto; }
+        .objectives-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        .objective-card {
+            position: relative; border-radius: 32px; overflow: hidden;
+            box-shadow: var(--shadow); transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer; text-decoration: none; display: block;
+            height: 320px; background-size: cover; background-position: center;
+        }
+        .objective-card:hover { transform: translateY(-8px); box-shadow: 0 25px 40px -12px rgba(0,0,0,0.25); }
+        .objective-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(26,139,175,0.55) 0%, rgba(0,0,0,0.65) 100%);
+            z-index: 1;
+        }
+        .objective-content {
+            position: relative; z-index: 2; height: 100%;
+            display: flex; flex-direction: column; justify-content: flex-end;
+            padding: 32px; color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        .objective-content h3 { font-size: 1.8rem; margin-bottom: 12px; color: white; }
+        .objective-content p { color: rgba(255,255,255,0.9); font-size: 0.95rem; }
+        .objective-card[data-bg="imovel"] { background-image: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=1200&auto=format'); }
+        .objective-card[data-bg="carro"]  { background-image: url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format'); }
+        .objective-card[data-bg="investimento"] { background-image: url('https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=1200&auto=format'); }
+
+        /* Stats */
+        .hero-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin: 60px 0; }
+        .stat-card { background: white; border-radius: 28px; padding: 32px; text-align: center; box-shadow: var(--shadow); border: 1px solid var(--border-light); }
+        .stat-number {
+            font-size: 3rem; font-weight: 800;
+            background: var(--diamond-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            display: block;
+        }
+        .stat-label { color: var(--muted); }
+
+        /* Simulador */
+        .simulator { padding: 100px 0; }
+        .simulator-card {
+            max-width: 850px; margin: 0 auto; background: white;
+            border-radius: 48px; padding: 48px;
+            box-shadow: var(--shadow); border: 1px solid var(--border-light);
+        }
+        .simulator-tabs { display: flex; gap: 12px; margin-bottom: 40px; }
+        .tab-btn {
+            flex: 1; padding: 16px; border-radius: 60px;
+            border: none; background: #f0f0f0;
+            font-weight: 700; cursor: pointer; transition: 0.2s; color: var(--primary-dark);
+        }
+        .tab-btn.active {
+            background: var(--diamond-gradient); color: white;
+            box-shadow: 0 6px 14px rgba(42,175,212,0.3);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .range-wrapper label { display: block; margin-bottom: 12px; font-weight: 600; }
+        .range-value {
+            font-size: 2rem; font-weight: 800;
+            background: var(--diamond-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            margin-bottom: 20px;
+        }
+        input[type="range"] {
+            width: 100%; height: 6px; -webkit-appearance: none;
+            background: linear-gradient(90deg, #4DC3E8, #1A8BAF); border-radius: 10px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 24px; height: 24px;
+            background: var(--diamond-gradient); border-radius: 50%;
+            cursor: pointer; box-shadow: 0 0 8px rgba(42,175,212,0.5); border: 2px solid white;
+        }
+        .simulator-result {
+            background: #f9f9f9; border-radius: 32px;
+            padding: 28px; text-align: center; margin: 30px 0;
+        }
+        .simulator-result strong {
+            font-size: 2.8rem;
+            background: var(--diamond-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            display: block; margin: 12px 0;
+        }
+        .simulator-action { text-align: center; }
+
+        /* =============================================
+           CALCULADORA DE COMPARAÇÃO (NOVA)
+        ============================================= */
+        .comparison { padding: 100px 0; background: white; }
+        .comparison-card {
+            max-width: 900px; margin: 0 auto; border-radius: 48px;
+            padding: 48px; background: var(--bg-light);
+            box-shadow: var(--shadow); border: 1px solid var(--border-light);
+        }
+        .comparison-inputs {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 36px;
+        }
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .input-group label { font-weight: 600; font-size: 0.9rem; color: var(--gray-text); }
+        .input-group input {
+            height: 54px; padding: 0 18px; border-radius: 18px;
+            border: 1.5px solid var(--border-light);
+            background: white; font-size: 1rem; font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-group input:focus {
+            outline: none; border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(42,175,212,0.15);
+        }
+        .comparison-result {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+            margin-top: 8px;
+        }
+        .comp-box {
+            border-radius: 28px; padding: 28px; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .comp-box.bad {
+            background: #fff5f5; border: 1.5px solid #fecaca;
+        }
+        .comp-box.good {
+            background: linear-gradient(135deg, rgba(77,195,232,0.08), rgba(26,139,175,0.08));
+            border: 1.5px solid rgba(42,175,212,0.3);
+        }
+        .comp-box-label {
+            font-size: 0.78rem; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; margin-bottom: 8px;
+        }
+        .comp-box.bad .comp-box-label { color: #ef4444; }
+        .comp-box.good .comp-box-label { color: var(--accent-dark); }
+        .comp-box-title { font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--primary-dark); }
+        .comp-box-value {
+            font-size: 2rem; font-weight: 800; display: block; margin-bottom: 6px;
+        }
+        .comp-box.bad .comp-box-value { color: #ef4444; }
+        .comp-box.good .comp-box-value {
+            background: var(--diamond-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .comp-box-sub { font-size: 0.8rem; color: var(--muted); }
+        .comp-economy {
+            margin-top: 20px; background: linear-gradient(135deg, #4DC3E8, #1A8BAF);
+            border-radius: 20px; padding: 18px 28px;
+            display: flex; align-items: center; justify-content: space-between;
+            color: white; gap: 12px; flex-wrap: wrap;
+        }
+        .comp-economy span { font-size: 0.9rem; opacity: 0.9; }
+        .comp-economy strong { font-size: 1.5rem; font-weight: 800; }
+        .comp-btn-wrap { text-align: center; margin-top: 28px; }
+
+        /* =============================================
+           FORMULÁRIO MULTI-ETAPAS (NOVO)
+        ============================================= */
+        .multistep-section { padding: 100px 0; }
+        .multistep-card {
+            max-width: 700px; margin: 0 auto; background: white;
+            border-radius: 48px; padding: 48px;
+            box-shadow: var(--shadow); border: 1px solid var(--border-light);
+        }
+        .step-indicator {
+            display: flex; gap: 8px; margin-bottom: 40px; align-items: center;
+        }
+        .step-dot {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.85rem;
+            background: #f0f0f0; color: var(--muted);
+            transition: all 0.3s; flex-shrink: 0;
+        }
+        .step-dot.active {
+            background: var(--diamond-gradient); color: white;
+            box-shadow: 0 4px 12px rgba(42,175,212,0.4);
+        }
+        .step-dot.done { background: #10b981; color: white; }
+        .step-line {
+            flex: 1; height: 3px; background: #f0f0f0;
+            border-radius: 4px; transition: background 0.4s;
+        }
+        .step-line.done { background: #10b981; }
+        .ms-step { display: none; }
+        .ms-step.active { display: block; animation: fadeSlide 0.35s ease; }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateX(20px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        .ms-step h3 { font-size: 1.4rem; margin-bottom: 8px; }
+        .ms-step p  { color: var(--muted); margin-bottom: 28px; font-size: 0.95rem; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .option-card {
+            border: 2px solid var(--border-light); border-radius: 20px;
+            padding: 20px 18px; cursor: pointer; transition: all 0.2s;
+            text-align: center; background: white;
+        }
+        .option-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .option-card.selected { border-color: var(--accent); background: rgba(42,175,212,0.06); }
+        .option-card i { font-size: 1.8rem; margin-bottom: 10px; display: block;
+            background: var(--diamond-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .option-card span { font-weight: 600; font-size: 0.95rem; }
+        .ms-nav { display: flex; gap: 14px; margin-top: 32px; }
+        .ms-nav .btn { flex: 1; }
+        .ms-field { margin-bottom: 18px; }
+        .ms-field label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
+        .ms-field input, .ms-field select {
+            width: 100%; height: 54px; padding: 0 18px;
+            border-radius: 18px; border: 1.5px solid var(--border-light);
+            background: #fafafa; font-size: 1rem; font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .ms-field input:focus, .ms-field select:focus {
+            outline: none; border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(42,175,212,0.15);
+        }
+        .ms-success { text-align: center; padding: 20px 0; }
+        .ms-success-icon {
+            width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 24px; font-size: 2.2rem; color: white;
+            box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+            animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+        .ms-success h3 { font-size: 1.6rem; margin-bottom: 12px; }
+        .ms-success p  { color: var(--muted); margin-bottom: 28px; }
+
+        /* =============================================
+           POPUP EXIT INTENT (NOVO)
+        ============================================= */
+        .exit-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(4px);
+            z-index: 99998; display: none;
+            align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .exit-overlay.visible { display: flex; }
+        .exit-popup {
+            background: white; border-radius: 40px;
+            padding: 48px; max-width: 520px; width: 100%;
+            text-align: center; position: relative;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.2);
+            animation: popupIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes popupIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+        .exit-close {
+            position: absolute; top: 20px; right: 24px;
+            background: none; border: none; font-size: 1.4rem;
+            cursor: pointer; color: var(--muted); transition: color 0.2s;
+        }
+        .exit-close:hover { color: var(--primary-dark); }
+        .exit-emoji { font-size: 3.5rem; margin-bottom: 16px; display: block; }
+        .exit-popup h3 { font-size: 1.6rem; margin-bottom: 10px; line-height: 1.2; }
+        .exit-popup p  { color: var(--muted); margin-bottom: 24px; font-size: 0.95rem; }
+        .exit-form { display: flex; flex-direction: column; gap: 14px; }
+        .exit-form input {
+            height: 54px; padding: 0 20px; border-radius: 18px;
+            border: 1.5px solid var(--border-light);
+            background: #fafafa; font-size: 1rem; font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .exit-form input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(42,175,212,0.15); }
+        .exit-skip { background: none; border: none; color: var(--muted); font-size: 0.85rem; cursor: pointer; margin-top: 8px; }
+        .exit-skip:hover { text-decoration: underline; }
+
+        /* Benefícios */
+        .benefits { padding: 100px 0; }
+        .benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; }
+        .benefit-card { background: white; border-radius: 32px; overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; }
+        .benefit-card:hover { transform: translateY(-8px); }
+        .benefit-card img { width: 100%; height: 200px; object-fit: cover; }
+        .benefit-body { padding: 28px; }
+        .benefit-icon {
+            font-size: 2.2rem; margin-bottom: 20px;
+            background: var(--diamond-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        /* Depoimentos */
+        .testimonials { padding: 100px 0; }
+        .testimonial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; }
+        .testimonial-card { background: white; border-radius: 32px; padding: 32px; box-shadow: var(--shadow); }
+        .testimonial-top { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+        .testimonial-top img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
+        .testimonial-stars {
+            background: var(--diamond-gradient-h);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            letter-spacing: 4px; margin-top: 20px;
+        }
+
+        /* Etapas */
+        .steps { padding: 80px 0; }
+        .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; }
+        .step-card {
+            background: white; border-radius: 32px; padding: 40px;
+            position: relative; overflow: hidden; box-shadow: var(--shadow);
+        }
+        .step-card span { font-size: 5rem; font-weight: 800; color: rgba(0,0,0,0.05); position: absolute; right: 20px; top: 0; }
+        .step-card h3 { margin-bottom: 16px; position: relative; }
+
+        /* Contato */
+        .contact { padding: 100px 0; }
+        .contact-wrapper {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 50px;
+            background: white; border-radius: 48px; padding: 50px; box-shadow: var(--shadow);
+        }
+        .contact-form form { display: flex; flex-direction: column; gap: 20px; }
+        .contact-form input {
+            height: 58px; padding: 0 20px; border-radius: 20px;
+            border: 1px solid var(--border-light); background: #fafafa; font-size: 1rem;
+        }
+        .contact-form input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(42,175,212,0.15); }
+        .contact-info ul li { margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+        .contact-info ul li i { width: 24px; color: var(--accent); }
+
+        /* Footer */
+        .footer { padding: 40px 0; text-align: center; color: var(--muted); border-top: 1px solid var(--border-light); }
+
+        /* WhatsApp flutuante */
+        .floating-whatsapp {
+            position: fixed; bottom: 24px; right: 24px;
+            width: 64px; height: 64px; background: #25D366;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 2rem; z-index: 9999;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: 0.2s;
+        }
+        .floating-whatsapp:hover { transform: scale(1.08); }
+
+        /* ===== RESPONSIVIDADE ===== */
+        @media (max-width: 900px) {
+            .hero-container, .objectives-grid, .benefits-grid,
+            .testimonial-grid, .steps-grid, .contact-wrapper,
+            .comparison-inputs, .comparison-result { grid-template-columns: 1fr; }
+            .hero-stats { grid-template-columns: 1fr; }
+            .nav-list { display: none; }
+            .mobile-menu-btn { display: block; }
+            .simulator-card, .comparison-card, .multistep-card { padding: 28px; }
+            .options-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 640px) {
+            .hero-buttons .btn { width: 100%; justify-content: center; }
+            .hero { padding: 60px 0 40px; }
+            .simulator-card, .comparison-card, .multistep-card { padding: 20px; }
+            .simulator-result strong { font-size: 2rem; }
+            .range-value { font-size: 1.5rem; }
+            .contact-wrapper { padding: 28px; }
+            .options-grid { grid-template-columns: 1fr; }
+            .exit-popup { padding: 32px 24px; }
+        }
+        @media (max-width: 768px) {
+            .header-container { height: 72px; }
+            .hero { padding-top: 40px; }
+            .hero-container { gap: 32px; }
+            .hero-content { text-align: center; }
+            .hero-buttons { justify-content: center; }
+            .simulator-tabs { flex-direction: column; }
+            .tab-btn { width: 100%; }
+            .floating-whatsapp { width: 56px; height: 56px; font-size: 1.6rem; bottom: 18px; right: 18px; }
+            .comp-economy { flex-direction: column; text-align: center; }
+        }
+        html, body { overflow-x: hidden; }
+        img { max-width: 100%; }
+        button, a, input { touch-action: manipulation; }
+    </style>
+</head>
+
+<body>
+
+    <!-- Loader -->
+    <div class="loader" id="loader"><div class="loader-circle"></div></div>
+
+    <!-- Barra de progresso -->
+    <div class="scroll-progress"></div>
+
+    <!-- WhatsApp flutuante -->
+    <a href="https://wa.me/5564992324433" target="_blank" class="floating-whatsapp" aria-label="WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- =============================================
+         POPUP EXIT INTENT
+    ============================================= -->
+    <div class="exit-overlay" id="exitOverlay">
+        <div class="exit-popup">
+            <button class="exit-close" id="exitClose"><i class="fas fa-times"></i></button>
+            <span class="exit-emoji">💡</span>
+            <h3>Antes de sair, veja quanto você pode economizar</h3>
+            <p>Deixe seu WhatsApp e receba uma simulação personalizada grátis em minutos.</p>
+            <div class="exit-form">
+                <input type="text" id="exitNome" placeholder="Seu nome">
+                <input type="tel" id="exitWhats" placeholder="Seu WhatsApp">
+                <button class="btn btn-whatsapp btn-block" id="exitSubmit">
+                    <i class="fab fa-whatsapp"></i> Quero minha simulação grátis
+                </button>
+            </div>
+            <button class="exit-skip" id="exitSkip">Não, obrigado</button>
+        </div>
+    </div>
+
+    <!-- Cabeçalho -->
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo">
+                <div class="logo-glow"></div>
+                <img src="assets/logo.png" alt="Lucro Real" class="logo-img" onerror="this.style.display='none'">
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="#simulador">Simular</a></li>
+                    <li><a href="#comparar">Comparar</a></li>
+                    <li><a href="#vantagens">Vantagens</a></li>
+                    <li><a href="#depoimentos">Depoimentos</a></li>
+                    <li><a href="#contato">Contato</a></li>
+                </ul>
+                <button class="mobile-menu-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero -->
+        <section class="hero">
+            <div class="hero-blur hero-blur-1"></div>
+            <div class="hero-blur hero-blur-2"></div>
+            <div class="container hero-container">
+                <div class="hero-content" data-aos="fade-up">
+                    <span class="hero-badge">+500 clientes ativos</span>
+                    <h2>Realize seus sonhos com inteligência financeira</h2>
+                    <p>Consórcios planejados para imóveis, veículos e investimentos com parcelas acessíveis e sem juros abusivos.</p>
+                    <div class="hero-buttons">
+                        <a href="#simulador" class="btn btn-primary">Simular agora <i class="fas fa-arrow-right"></i></a>
+                        <a href="https://wa.me/5564992324433" target="_blank" class="btn btn-outline"><i class="fab fa-whatsapp"></i> Especialista</a>
+                    </div>
+                </div>
+                <div class="hero-visual" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="hero-image-wrapper">
+                        <img src="assets/escritorio.jpeg" alt="Escritório Lucro Real" class="hero-dashboard-img">
+                        <div class="hero-image-overlay">
+                            <div class="overlay-card">
+                                <span>Crédito aprovado</span>
+                                <strong>R$ 250.000</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Objetivos -->
+            <div class="container objectives">
+                <div class="section-header">
+                    <span class="section-tag">Seus objetivos</span>
+                    <h2>Um consórcio para cada fase da sua vida</h2>
+                    <p>Estratégias inteligentes para construir patrimônio sem comprometer sua liberdade financeira.</p>
+                </div>
+                <div class="objectives-grid">
+                    <a href="#simulador" class="objective-card" data-bg="imovel" data-aos="fade-up">
+                        <div class="objective-content">
+                            <h3>Comprar seu imóvel</h3>
+                            <p>Saia do aluguel com planejamento e parcelas acessíveis.</p>
+                        </div>
+                    </a>
+                    <a href="#simulador" class="objective-card" data-bg="carro" data-aos="fade-up" data-aos-delay="100">
+                        <div class="objective-content">
+                            <h3>Trocar de veículo</h3>
+                            <p>Conquiste carros, caminhonetes e veículos premium sem juros.</p>
+                        </div>
+                    </a>
+                    <a href="#simulador" class="objective-card" data-bg="investimento" data-aos="fade-up" data-aos-delay="200">
+                        <div class="objective-content">
+                            <h3>Expandir investimentos</h3>
+                            <p>Use crédito inteligente para acelerar crescimento patrimonial.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Simulador (original) -->
+        <section id="simulador" class="simulator">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Simulação Inteligente</span>
+                    <h2>Escolha seu crédito</h2>
+                    <p>Simulação instantânea com valores reais da Lucro Real.</p>
+                </div>
+                <div class="simulator-card" data-aos="fade-up">
+                    <div class="simulator-tabs">
+                        <button class="tab-btn active" data-tab="investimento">Investimentos / Veículos</button>
+                        <button class="tab-btn" data-tab="imoveis">Imóveis / Terrenos</button>
+                    </div>
+                    <div class="tab-content active" id="tab-investimento">
+                        <div class="range-wrapper">
+                            <label>Valor do crédito</label>
+                            <div class="range-value" id="valorInvestimento">R$ 100.000</div>
+                            <input type="range" id="rangeInvestimento" min="34000" max="800000" step="1000" value="100000">
+                        </div>
+                        <div class="simulator-result">
+                            <span>Parcela mensal aproximada</span>
+                            <strong id="parcelaInvestimento">R$ 483,30</strong>
+                            <small>*1/2 parcela. Consulte condições.</small>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="tab-imoveis">
+                        <div class="range-wrapper">
+                            <label>Valor do crédito</label>
+                            <div class="range-value" id="valorImovel">R$ 200.000</div>
+                            <input type="range" id="rangeImoveis" min="80000" max="1000000" step="1000" value="200000">
+                        </div>
+                        <div class="simulator-result">
+                            <span>Parcela mensal aproximada</span>
+                            <strong id="parcelaImovel">R$ 615,00</strong>
+                            <small>*1/2 parcela. Consulte condições.</small>
+                        </div>
+                    </div>
+                    <div class="simulator-action">
+                        <button class="btn btn-whatsapp btn-large" id="sendSimulationBtn">
+                            <i class="fab fa-whatsapp"></i> Simular no WhatsApp
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =============================================
+             CALCULADORA DE COMPARAÇÃO (NOVA)
+        ============================================= -->
+        <section id="comparar" class="comparison">
+            <div class="container">
+                <div class="section-header" data-aos="fade-up">
+                    <span class="section-tag">Consórcio vs Financiamento</span>
+                    <h2>Veja quanto você economiza</h2>
+                    <p>Compare em tempo real o custo total do financiamento bancário com o consórcio Lucro Real.</p>
+                </div>
+                <div class="comparison-card" data-aos="fade-up">
+                    <div class="comparison-inputs">
+                        <div class="input-group">
+                            <label>Valor do bem (R$)</label>
+                            <input type="number" id="cmpValor" value="200000" min="10000" max="2000000" step="1000">
+                        </div>
+                        <div class="input-group">
+                            <label>Prazo (meses)</label>
+                            <input type="number" id="cmpPrazo" value="120" min="12" max="240" step="12">
+                        </div>
+                        <div class="input-group">
+                            <label>Taxa de juros financiamento (% a.a.)</label>
+                            <input type="number" id="cmpJuros" value="14.5" min="1" max="60" step="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label>Taxa de administração consórcio (% total)</label>
+                            <input type="number" id="cmpAdmin" value="18" min="5" max="30" step="0.5">
+                        </div>
+                    </div>
+                    <div class="comparison-result">
+                        <div class="comp-box bad">
+                            <div class="comp-box-label">❌ Financiamento Bancário</div>
+                            <div class="comp-box-title">Custo total com juros</div>
+                            <span class="comp-box-value" id="cmpFinTotal">R$ 0</span>
+                            <div class="comp-box-sub">Parcela: <strong id="cmpFinParcela">R$ 0</strong>/mês</div>
+                        </div>
+                        <div class="comp-box good">
+                            <div class="comp-box-label">✅ Consórcio Lucro Real</div>
+                            <div class="comp-box-title">Custo total com taxa admin</div>
+                            <span class="comp-box-value" id="cmpConTotal">R$ 0</span>
+                            <div class="comp-box-sub">Parcela: <strong id="cmpConParcela">R$ 0</strong>/mês</div>
+                        </div>
+                    </div>
+                    <div class="comp-economy">
+                        <span>💰 Você economiza com o consórcio:</span>
+                        <strong id="cmpEconomy">R$ 0</strong>
+                    </div>
+                    <div class="comp-btn-wrap">
+                        <button class="btn btn-whatsapp btn-large" id="cmpWhatsBtn">
+                            <i class="fab fa-whatsapp"></i> Quero economizar assim!
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =============================================
+             FORMULÁRIO MULTI-ETAPAS (NOVO)
+        ============================================= -->
+        <section id="proposta" class="multistep-section">
+            <div class="container">
+                <div class="section-header" data-aos="fade-up">
+                    <span class="section-tag">Proposta personalizada</span>
+                    <h2>Monte seu consórcio ideal</h2>
+                    <p>Responda 3 perguntas rápidas e receba uma proposta sob medida.</p>
+                </div>
+                <div class="multistep-card" data-aos="fade-up">
+
+                    <!-- Indicador de etapas -->
+                    <div class="step-indicator">
+                        <div class="step-dot active" id="dot1">1</div>
+                        <div class="step-line" id="line1"></div>
+                        <div class="step-dot" id="dot2">2</div>
+                        <div class="step-line" id="line2"></div>
+                        <div class="step-dot" id="dot3">3</div>
+                        <div class="step-line" id="line3"></div>
+                        <div class="step-dot" id="dot4"><i class="fas fa-check" style="font-size:0.8rem"></i></div>
+                    </div>
+
+                    <!-- ETAPA 1 — Objetivo -->
+                    <div class="ms-step active" id="msStep1">
+                        <h3>Qual é o seu objetivo?</h3>
+                        <p>Selecione o tipo de crédito que melhor se encaixa no seu plano.</p>
+                        <div class="options-grid" id="msObjGrid">
+                            <div class="option-card" data-val="Imóvel Residencial">
+                                <i class="fas fa-home"></i>
+                                <span>Imóvel Residencial</span>
+                            </div>
+                            <div class="option-card" data-val="Imóvel Comercial / Terreno">
+                                <i class="fas fa-building"></i>
+                                <span>Imóvel Comercial / Terreno</span>
+                            </div>
+                            <div class="option-card" data-val="Veículo / Moto">
+                                <i class="fas fa-car"></i>
+                                <span>Veículo / Moto</span>
+                            </div>
+                            <div class="option-card" data-val="Maquinário / Agro">
+                                <i class="fas fa-tractor"></i>
+                                <span>Maquinário / Agro</span>
+                            </div>
+                            <div class="option-card" data-val="Investimento / Capital de Giro">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Investimento / Capital</span>
+                            </div>
+                            <div class="option-card" data-val="Outro">
+                                <i class="fas fa-ellipsis-h"></i>
+                                <span>Outro objetivo</span>
+                            </div>
+                        </div>
+                        <div class="ms-nav">
+                            <button class="btn btn-primary" id="msNext1" disabled>Próximo <i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- ETAPA 2 — Faixa de crédito -->
+                    <div class="ms-step" id="msStep2">
+                        <h3>Qual faixa de crédito você precisa?</h3>
+                        <p>Escolha o valor aproximado que deseja ter disponível.</p>
+                        <div class="options-grid" id="msFaixaGrid">
+                            <div class="option-card" data-val="Até R$ 80.000">
+                                <i class="fas fa-coins"></i>
+                                <span>Até R$ 80.000</span>
+                            </div>
+                            <div class="option-card" data-val="R$ 80.000 a R$ 200.000">
+                                <i class="fas fa-piggy-bank"></i>
+                                <span>R$ 80k – R$ 200k</span>
+                            </div>
+                            <div class="option-card" data-val="R$ 200.000 a R$ 500.000">
+                                <i class="fas fa-wallet"></i>
+                                <span>R$ 200k – R$ 500k</span>
+                            </div>
+                            <div class="option-card" data-val="Acima de R$ 500.000">
+                                <i class="fas fa-gem"></i>
+                                <span>Acima de R$ 500k</span>
+                            </div>
+                        </div>
+                        <div class="ms-nav">
+                            <button class="btn btn-outline" id="msPrev2"><i class="fas fa-arrow-left"></i> Voltar</button>
+                            <button class="btn btn-primary" id="msNext2" disabled>Próximo <i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- ETAPA 3 — Dados de contato -->
+                    <div class="ms-step" id="msStep3">
+                        <h3>Seus dados para contato</h3>
+                        <p>Um especialista vai montar sua proposta e enviar diretamente no WhatsApp.</p>
+                        <div class="ms-field">
+                            <label>Nome completo</label>
+                            <input type="text" id="msNome" placeholder="Seu nome">
+                        </div>
+                        <div class="ms-field">
+                            <label>WhatsApp</label>
+                            <input type="tel" id="msWhats" placeholder="(64) 99999-9999">
+                        </div>
+                        <div class="ms-field">
+                            <label>Prazo desejado</label>
+                            <select id="msPrazo">
+                                <option value="Até 60 meses">Até 60 meses</option>
+                                <option value="61 a 120 meses" selected>61 a 120 meses</option>
+                                <option value="121 a 200 meses">121 a 200 meses</option>
+                                <option value="Não sei ainda">Não sei ainda</option>
+                            </select>
+                        </div>
+                        <div class="ms-nav">
+                            <button class="btn btn-outline" id="msPrev3"><i class="fas fa-arrow-left"></i> Voltar</button>
+                            <button class="btn btn-whatsapp" id="msSubmit">
+                                <i class="fab fa-whatsapp"></i> Enviar proposta
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ETAPA 4 — Sucesso -->
+                    <div class="ms-step" id="msStep4">
+                        <div class="ms-success">
+                            <div class="ms-success-icon"><i class="fas fa-check"></i></div>
+                            <h3>Proposta enviada!</h3>
+                            <p>Seu WhatsApp foi aberto com todas as informações. O Thiago vai entrar em contato em breve com sua proposta personalizada.</p>
+                            <a href="https://wa.me/5564992324433" target="_blank" class="btn btn-whatsapp btn-large">
+                                <i class="fab fa-whatsapp"></i> Abrir WhatsApp agora
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Vantagens -->
+        <section id="vantagens" class="benefits">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Diferenciais</span>
+                    <h2>Experiência premium para o seu patrimônio</h2>
+                </div>
+                <div class="benefits-grid">
+                    <div class="benefit-card" data-aos="fade-up">
+                        <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=1200&auto=format" alt="Planejamento">
+                        <div class="benefit-body">
+                            <div class="benefit-icon"><i class="fas fa-chart-line"></i></div>
+                            <h3>Planejamento estratégico</h3>
+                            <p>Construa patrimônio com previsibilidade financeira.</p>
+                        </div>
+                    </div>
+                    <div class="benefit-card" data-aos="fade-up" data-aos-delay="100">
+                        <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=1200&auto=format" alt="Imóveis">
+                        <div class="benefit-body">
+                            <div class="benefit-icon"><i class="fas fa-home"></i></div>
+                            <h3>Crédito imobiliário</h3>
+                            <p>Casas, apartamentos, terrenos e imóveis rurais.</p>
+                        </div>
+                    </div>
+                    <div class="benefit-card" data-aos="fade-up" data-aos-delay="200">
+                        <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1200&auto=format" alt="Veículos">
+                        <div class="benefit-body">
+                            <div class="benefit-icon"><i class="fas fa-car"></i></div>
+                            <h3>Veículos e máquinas</h3>
+                            <p>Soluções inteligentes para crescimento pessoal e empresarial.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Depoimentos -->
+        <section id="depoimentos" class="testimonials">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Histórias reais</span>
+                    <h2>Clientes que transformaram seus planos em patrimônio</h2>
+                </div>
+                <div class="testimonial-grid">
+                    <div class="testimonial-card" data-aos="fade-up">
+                        <div class="testimonial-top">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Carlos">
+                            <div><strong>Carlos Henrique</strong><br><span>Empresário</span></div>
+                        </div>
+                        <p>"Fui contemplado antes do esperado e consegui expandir minha frota sem pagar juros absurdos."</p>
+                        <div class="testimonial-stars">★★★★★</div>
+                    </div>
+                    <div class="testimonial-card" data-aos="fade-up" data-aos-delay="100">
+                        <div class="testimonial-top">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Juliana">
+                            <div><strong>Juliana Martins</strong><br><span>Investidora</span></div>
+                        </div>
+                        <p>"O atendimento foi extremamente estratégico. Me ajudaram a escolher o plano ideal."</p>
+                        <div class="testimonial-stars">★★★★★</div>
+                    </div>
+                    <div class="testimonial-card" data-aos="fade-up" data-aos-delay="200">
+                        <div class="testimonial-top">
+                            <img src="https://randomuser.me/api/portraits/men/68.jpg" alt="Rafael">
+                            <div><strong>Rafael Souza</strong><br><span>Produtor Rural</span></div>
+                        </div>
+                        <p>"Consegui adquirir equipamentos agrícolas sem destruir meu caixa."</p>
+                        <div class="testimonial-stars">★★★★★</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Etapas -->
+        <section class="steps">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Processo simples</span>
+                    <h2>Como funciona</h2>
+                </div>
+                <div class="steps-grid">
+                    <div class="step-card"><span>01</span>
+                        <h3>Faça a simulação</h3>
+                        <p>Escolha o crédito ideal para seu objetivo.</p>
+                    </div>
+                    <div class="step-card"><span>02</span>
+                        <h3>Receba consultoria</h3>
+                        <p>Um especialista monta a estratégia ideal.</p>
+                    </div>
+                    <div class="step-card"><span>03</span>
+                        <h3>Conquiste seu patrimônio</h3>
+                        <p>Use o crédito com inteligência e previsibilidade.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contato -->
+        <section id="contato" class="contact">
+            <div class="container">
+                <div class="contact-wrapper">
+                    <div class="contact-info">
+                        <span class="section-tag">Atendimento</span>
+                        <h2>Fale com um especialista</h2>
+                        <p>Atendimento consultivo premium. Tire suas dúvidas e comece hoje.</p>
+                        <ul style="margin-top: 20px; list-style: none;">
+                            <li><i class="fas fa-map-marker-alt"></i> Le Monde - Segundo andar - Sala 5</li>
+                            <li><i class="fab fa-whatsapp"></i> (64) 99232-4433 - Thiago Cruvinel</li>
+                        </ul>
+                    </div>
+                    <div class="contact-form">
+                        <form id="leadForm">
+                            <input type="text" placeholder="Seu nome" id="nomeLead" required>
+                            <input type="tel" placeholder="WhatsApp" id="whatsLead" required>
+                            <button type="submit" class="btn btn-primary btn-block">Solicitar contato <i class="fas fa-paper-plane"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 Lucro Real — Todos os direitos reservados. Consórcio não é financiamento. Consulte regulamento.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        /* ========== TABELAS DE PREÇOS ========== */
+        const tabelaInvestimento = {
+            34000:197.20,37500:217.51,40000:232.00,42500:246.51,45000:261.00,
+            50000:290.00,60000:348.00,70000:406.00,80000:464.00,90000:522.00,
+            100000:483.30,120000:579.96,130000:628.29,140000:676.62,150000:724.95,
+            160000:773.28,170000:821.61,180000:869.94,200000:966.60,220000:1063.26,
+            250000:1208.25,280000:1353.24,300000:1449.90,400000:1657.20,500000:2071.50,
+            600000:2485.80,700000:2900.10,800000:3314.40
+        };
+        const tabelaImoveis = {
+            80000:273.20,90000:307.35,100000:341.50,120000:409.80,140000:478.10,
+            150000:512.25,180000:614.70,200000:615.00,250000:768.75,300000:922.50,
+            350000:1076.25,400000:1230.00,500000:1397.50,600000:1677.00,700000:1953.50,
+            800000:2236.00,900000:2515.00,1000000:2795.00
+        };
+
+        function getNearestValue(tabela, valor) {
+            const keys = Object.keys(tabela).map(Number).sort((a,b)=>a-b);
+            const closest = keys.reduce((p,c)=>Math.abs(c-valor)<Math.abs(p-valor)?c:p);
+            return { credito: closest, parcela: tabela[closest] };
+        }
+
+        const rangeInv = document.getElementById('rangeInvestimento');
+        const valorInvSpan = document.getElementById('valorInvestimento');
+        const parcelaInvSpan = document.getElementById('parcelaInvestimento');
+        const rangeImv = document.getElementById('rangeImoveis');
+        const valorImvSpan = document.getElementById('valorImovel');
+        const parcelaImvSpan = document.getElementById('parcelaImovel');
+
+        function atualizarInvestimento() {
+            const v = Number(rangeInv.value);
+            const {credito, parcela} = getNearestValue(tabelaInvestimento, v);
+            rangeInv.value = credito;
+            valorInvSpan.innerText = `R$ ${credito.toLocaleString('pt-BR')}`;
+            parcelaInvSpan.innerText = `R$ ${parcela.toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
+        }
+        function atualizarImoveis() {
+            const v = Number(rangeImv.value);
+            const {credito, parcela} = getNearestValue(tabelaImoveis, v);
+            rangeImv.value = credito;
+            valorImvSpan.innerText = `R$ ${credito.toLocaleString('pt-BR')}`;
+            parcelaImvSpan.innerText = `R$ ${parcela.toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
+        }
+
+        rangeInv.addEventListener('input', atualizarInvestimento);
+        rangeImv.addEventListener('input', atualizarImoveis);
+        atualizarInvestimento();
+        atualizarImoveis();
+
+        /* Tabs */
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+                document.getElementById(`tab-${tabId}`).classList.add('active');
+            });
+        });
+
+        /* Simulador → WhatsApp */
+        document.getElementById('sendSimulationBtn').addEventListener('click', () => {
+            const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+            let credito, parcela, plano;
+            if (activeTab === 'investimento') {
+                credito = Number(rangeInv.value);
+                parcela = getNearestValue(tabelaInvestimento, credito).parcela;
+                plano = 'Investimento / Veículos';
+            } else {
+                credito = Number(rangeImv.value);
+                parcela = getNearestValue(tabelaImoveis, credito).parcela;
+                plano = 'Imóveis / Terrenos';
+            }
+            const msg = `Olá! Gostaria de simular um consórcio:\n📌 Plano: ${plano}\n💰 Crédito: R$ ${credito.toLocaleString('pt-BR')}\n📆 Parcela aproximada: R$ ${parcela.toFixed(2).replace('.',',')}\n\nGostaria de receber mais informações.`;
+            window.open(`https://wa.me/5564992324433?text=${encodeURIComponent(msg)}`, '_blank');
+            gtag('event','generate_lead',{event_label:'Simulador WhatsApp'});
+        });
+
+        /* ========== CALCULADORA DE COMPARAÇÃO ========== */
+        function fmt(val) {
+            return val.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2});
+        }
+
+        function calcularComparacao() {
+            const valor  = parseFloat(document.getElementById('cmpValor').value)  || 0;
+            const meses  = parseInt(document.getElementById('cmpPrazo').value)     || 1;
+            const taxaAA = parseFloat(document.getElementById('cmpJuros').value)   || 0;
+            const admin  = parseFloat(document.getElementById('cmpAdmin').value)   || 0;
+
+            // Financiamento — Price (juros compostos mensais)
+            const taxaMes = Math.pow(1 + taxaAA/100, 1/12) - 1;
+            let parcelaFin = 0;
+            if (taxaMes > 0) {
+                parcelaFin = valor * (taxaMes * Math.pow(1+taxaMes, meses)) / (Math.pow(1+taxaMes, meses) - 1);
+            } else {
+                parcelaFin = valor / meses;
+            }
+            const totalFin = parcelaFin * meses;
+
+            // Consórcio — valor + taxa admin (sem juros)
+            const totalCon = valor * (1 + admin/100);
+            const parcelaCon = totalCon / meses;
+
+            const economia = totalFin - totalCon;
+
+            document.getElementById('cmpFinTotal').innerText   = fmt(totalFin);
+            document.getElementById('cmpFinParcela').innerText = fmt(parcelaFin);
+            document.getElementById('cmpConTotal').innerText   = fmt(totalCon);
+            document.getElementById('cmpConParcela').innerText = fmt(parcelaCon);
+            document.getElementById('cmpEconomy').innerText    = economia > 0 ? fmt(economia) : 'Consulte um especialista';
+        }
+
+        ['cmpValor','cmpPrazo','cmpJuros','cmpAdmin'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calcularComparacao);
+        });
+        calcularComparacao();
+
+        document.getElementById('cmpWhatsBtn').addEventListener('click', () => {
+            const valor  = document.getElementById('cmpValor').value;
+            const meses  = document.getElementById('cmpPrazo').value;
+            const econ   = document.getElementById('cmpEconomy').innerText;
+            const msg = `Olá! Fiz a comparação no site da Lucro Real e vi que posso economizar ${econ} optando pelo consórcio em vez do financiamento.\n\n💰 Valor do bem: R$ ${Number(valor).toLocaleString('pt-BR')}\n📆 Prazo: ${meses} meses\n\nGostaria de receber uma proposta!`;
+            window.open(`https://wa.me/5564992324433?text=${encodeURIComponent(msg)}`, '_blank');
+            gtag('event','generate_lead',{event_label:'Calculadora Comparação'});
+        });
+
+        /* ========== FORMULÁRIO MULTI-ETAPAS ========== */
+        let msData = { objetivo: '', faixa: '' };
+
+        function setDot(n, state) {
+            const dot = document.getElementById(`dot${n}`);
+            dot.classList.remove('active','done');
+            if (state === 'active') dot.classList.add('active');
+            if (state === 'done')   dot.classList.add('done');
+        }
+        function setLine(n, done) {
+            const line = document.getElementById(`line${n}`);
+            line.classList.toggle('done', done);
+        }
+        function showStep(n) {
+            for (let i=1; i<=4; i++) document.getElementById(`msStep${i}`).classList.remove('active');
+            document.getElementById(`msStep${n}`).classList.add('active');
+            if (n===1) { setDot(1,'active'); setDot(2,''); setDot(3,''); setDot(4,''); setLine(1,false); setLine(2,false); setLine(3,false); }
+            if (n===2) { setDot(1,'done'); setDot(2,'active'); setDot(3,''); setDot(4,''); setLine(1,true); setLine(2,false); setLine(3,false); }
+            if (n===3) { setDot(1,'done'); setDot(2,'done'); setDot(3,'active'); setDot(4,''); setLine(1,true); setLine(2,true); setLine(3,false); }
+            if (n===4) { setDot(1,'done'); setDot(2,'done'); setDot(3,'done'); setDot(4,'done'); setLine(1,true); setLine(2,true); setLine(3,true); }
+        }
+
+        /* Seleção de opções */
+        function bindOptions(gridId, field, nextBtn) {
+            document.querySelectorAll(`#${gridId} .option-card`).forEach(card => {
+                card.addEventListener('click', () => {
+                    document.querySelectorAll(`#${gridId} .option-card`).forEach(c=>c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    msData[field] = card.dataset.val;
+                    nextBtn.disabled = false;
+                });
+            });
+        }
+        bindOptions('msObjGrid',  'objetivo', document.getElementById('msNext1'));
+        bindOptions('msFaixaGrid','faixa',    document.getElementById('msNext2'));
+
+        document.getElementById('msNext1').addEventListener('click', ()=>showStep(2));
+        document.getElementById('msPrev2').addEventListener('click', ()=>showStep(1));
+        document.getElementById('msNext2').addEventListener('click', ()=>showStep(3));
+        document.getElementById('msPrev3').addEventListener('click', ()=>showStep(2));
+
+        document.getElementById('msSubmit').addEventListener('click', () => {
+            const nome  = document.getElementById('msNome').value.trim();
+            const whats = document.getElementById('msWhats').value.trim();
+            const prazo = document.getElementById('msPrazo').value;
+            if (!nome || !whats) { alert('Preencha seu nome e WhatsApp para continuar.'); return; }
+            const msg = `Olá! Quero receber uma proposta de consórcio personalizada:\n\n👤 Nome: ${nome}\n📱 WhatsApp: ${whats}\n🎯 Objetivo: ${msData.objetivo}\n💰 Faixa de crédito: ${msData.faixa}\n📆 Prazo desejado: ${prazo}\n\nAguardo contato!`;
+            window.open(`https://wa.me/5564992324433?text=${encodeURIComponent(msg)}`, '_blank');
+            showStep(4);
+            gtag('event','generate_lead',{event_label:'Formulário Multi-Etapas'});
+        });
+
+        /* ========== EXIT INTENT ========== */
+        let exitShown = false;
+        document.addEventListener('mouseleave', (e) => {
+            if (e.clientY < 5 && !exitShown) {
+                exitShown = true;
+                document.getElementById('exitOverlay').classList.add('visible');
+                gtag('event','exit_intent_shown');
+            }
+        });
+
+        function closeExit() { document.getElementById('exitOverlay').classList.remove('visible'); }
+        document.getElementById('exitClose').addEventListener('click', closeExit);
+        document.getElementById('exitSkip').addEventListener('click',  closeExit);
+        document.getElementById('exitOverlay').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeExit();
+        });
+
+        document.getElementById('exitSubmit').addEventListener('click', () => {
+            const nome  = document.getElementById('exitNome').value.trim();
+            const whats = document.getElementById('exitWhats').value.trim();
+            if (!whats) { alert('Digite seu WhatsApp para continuar.'); return; }
+            const msg = `Olá! Me chamo ${nome||'(não informado)'} e gostaria de receber uma simulação gratuita de consórcio. Meu WhatsApp: ${whats}`;
+            window.open(`https://wa.me/5564992324433?text=${encodeURIComponent(msg)}`, '_blank');
+            closeExit();
+            gtag('event','generate_lead',{event_label:'Exit Intent Popup'});
+        });
+
+        /* ========== FORMULÁRIO CONTATO ========== */
+        document.getElementById('leadForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nome  = document.getElementById('nomeLead').value;
+            const whats = document.getElementById('whatsLead').value;
+            const msg   = `Olá! Meu nome é ${nome}, WhatsApp: ${whats}. Gostaria de receber uma proposta de consórcio.`;
+            window.open(`https://wa.me/5564992324433?text=${encodeURIComponent(msg)}`, '_blank');
+            e.target.reset();
+            gtag('event','generate_lead',{event_label:'Formulário Contato'});
+        });
+
+        /* ========== LOADER ========== */
+        window.addEventListener('load', () => {
+            setTimeout(() => document.getElementById('loader').classList.add('hidden'), 800);
+        });
+
+        /* ========== SCROLL PROGRESS ========== */
+        window.addEventListener('scroll', () => {
+            const winScroll = document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - window.innerHeight;
+            document.querySelector('.scroll-progress').style.width = ((winScroll/height)*100)+'%';
+        });
+
+        /* ========== MENU MOBILE ========== */
+        const menuBtn = document.getElementById('menuToggle');
+        const navList = document.querySelector('.nav-list');
+        if (menuBtn) {
+            menuBtn.addEventListener('click', () => {
+                const open = navList.style.display === 'flex';
+                navList.style.display = open ? '' : 'flex';
+                navList.style.flexDirection = open ? '' : 'column';
+                navList.style.position = open ? '' : 'absolute';
+                navList.style.top = open ? '' : '82px';
+                navList.style.left = open ? '' : '0';
+                navList.style.width = open ? '' : '100%';
+                navList.style.background = open ? '' : 'white';
+                navList.style.boxShadow = open ? '' : '0 10px 20px rgba(0,0,0,0.1)';
+                navList.style.padding = open ? '' : '1.5rem';
+                navList.style.gap = open ? '' : '1rem';
+                navList.style.zIndex = open ? '' : '99';
+            });
+        }
+
+        /* ========== AOS ========== */
+        AOS.init({ duration: 800, once: true });
+    </script>
+</body>
+</html>
